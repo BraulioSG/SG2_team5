@@ -6,16 +6,22 @@ from ProductionLine import ProductionLine
 from WorkStation import WorkStation
 
 env = simpy.Environment()
-Factory = Factory(env)
+factory = Factory(open_time=10, env=env)
 
-ProdLine1 = ProductionLine(env)
+prodLine1 = ProductionLine(id=1, env=env)
 
 for i in range(6):
-    ProdLine1.add_work_station(WorkStation(env))
+    prodLine1.add_work_station(WorkStation(id=i, env=env))
 
-Factory.add_production_line(ProdLine1)
+factory.add_production_line(prodLine1);
 
+def alarm(env: simpy.Environment, delay: int, factory: Factory):
+    yield env.timeout(delay)
+    factory.action.interrupt()
+    print("Alarm!")
 
+env.process(alarm(env, 200, factory))
 print("=== Simulation Started ===")
 env.run(until=500)
+
 print("=== Simulation Finished ===")
