@@ -1,23 +1,52 @@
 import simpy
 
-class Bin:
-    def __init__(self):
-        self.material_units = 25
-        self.empty = False
+class _Bin:
+    def __init__(self, capacity: int = 25):
+        self._material_units = capacity
+        self._capacity = capacity
+        self._empty = False
 
     def use_material(self):
-        self.material_units -= 1
-        self.empty = True if self.material_units <= 0 else False
+        """ Decrease by one the material units, if is empty it will rise an exception """
+        if(self.is_empty()):
+            #raise Exception("Try to use material when the bin is empty")
+            print("bin is empty")
+            return
 
-    def resupply(self):
-        self.material_units = 25
-        self.empty = False
+        self._material_units -= 1
+
+    def resupply(self) -> None:
+        """ Sets the material units to the same value as the capacity """
+        self._material_units = self.capacity
+
+    def get_remaining_units(self) -> int:
+        """ Returns the number of material units remaining in the bin """
+        return self._material_units
+
+    def is_empty(self) -> bool:
+        """ Returns true if the material units is less or equal to zero"""
+        return self.get_remaining_units() <= 0
 
 class WorkStation(object):
-    def __init__(self, _bin: Bin ,env: simpy.Environment) -> None:
-        self._evn = env
-        self.bin = _bin
+    def __init__(self, id: int, env: simpy.Environment) -> None:
+        self._env = env
+        self._id = id
+        self._bin = _Bin()
 
-    def process(self) -> simpy.Process:
+    def work(self) -> simpy.Process:
+        print(f"WS#{self._id}\tstarted \tt={self._env.now}")
+        if(self._bin.is_empty()):
+            #Do the resuply process
+            print(f"WS#{self._id}\t bin is empty")
+            pass
+
+        self._bin.use_material()
         yield self._env.timeout(1)
+        print(f"WS#{self._id}\tfinished\tt={self._env.now}")
+        print("i")
+
+    def supply(self) -> simpy.Process:
+        supply_time = 1
+        yield self._env.timeout(1)
+        print(f"WS#{self._id}\tsupplied\tt={self._env.now}")
 
