@@ -6,15 +6,8 @@ import random as rd
 class SuppliersContainer:
     def __init__(self, env: simpy.Environment, amount):
         self.suppliers = list()
-        for i in range(amount):
+        for i in range(amount - 1):
             self.suppliers.append(Supplier(env))
-
-    def check_for_available(self):
-        for supplier in self.suppliers:
-            if not supplier.busy:
-                return supplier
-
-        return False
 
 
 class Supplier:
