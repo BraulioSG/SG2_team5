@@ -1,12 +1,15 @@
 import simpy
 
-class _Bin:
+from Resuppliers import SuppliersContainer
+
+
+class Bin:
     def __init__(self, capacity: int = 25):
         self._material_units = capacity
         self._capacity = capacity
-        self._empty = False
+        self.empty = False
 
-    def use_material(self):
+     def use_material(self):
         """ Decrease by one the material units, if is empty it will rise an exception """
         if(self.is_empty()):
             #raise Exception("Try to use material when the bin is empty")
@@ -28,10 +31,10 @@ class _Bin:
         return self.get_remaining_units() <= 0
 
 class WorkStation(object):
-    def __init__(self, id: int, env: simpy.Environment) -> None:
+    def __init__(self, env: simpy.Environment, suppliers: SuppliersContainer) -> None:
         self._env = env
-        self._id = id
-        self._bin = _Bin()
+        self.bin = Bin()
+        self.suppliers = suppliers
 
     def work(self) -> simpy.Process:
         print(f"WS#{self._id}\tstarted \tt={self._env.now}")
@@ -44,9 +47,4 @@ class WorkStation(object):
         yield self._env.timeout(1)
         print(f"WS#{self._id}\tfinished\tt={self._env.now}")
         print("i")
-
-    def supply(self) -> simpy.Process:
-        supply_time = 1
-        yield self._env.timeout(1)
-        print(f"WS#{self._id}\tsupplied\tt={self._env.now}")
 
