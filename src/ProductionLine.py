@@ -1,7 +1,7 @@
 import simpy
 
 from Resuppliers import Supplier, SuppliersContainer
-from WorkStation import WorkStation;
+from WorkStation import WorkStation
 
 class ProductionLine(object):
     def __init__(self, env: simpy.Environment):
@@ -12,6 +12,6 @@ class ProductionLine(object):
     def process(self) -> simpy.Process:
         yield self._env.timeout(1)
 
-    def add_work_station(self, workStation: WorkStation) -> None:
-        self.work_stations.append(workStation)
+    def add_work_station(self, work_station: WorkStation) -> None:
+        self.work_stations.append(work_station)
 
