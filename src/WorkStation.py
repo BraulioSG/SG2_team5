@@ -1,92 +1,96 @@
 import random
-
 import simpy
 
-from Resuppliers import SuppliersContainer
-
-class _Bin:
-    """
-    Represents the Bin for a workStation
-    Attributes: 
-    - material_units
-    - capacity
-
-    Methods:
-    + use_material() -> None
-    + resupply() -> None
-    + get_remaining_units() -> int
-    + is_empty() -> bool
-    """
-    def __init__(self, capacity: int = 25):
-        self._material_units = capacity
-        self._capacity = capacity
-
-    def use_material(self):
-        """ Decrease by one the material units, if is empty it will rise an exception """
-        if(self.is_empty()):
-            #raise Exception("Try to use material when the bin is empty")
-            print("bin is empty")
-            return
-        self._material_units -= 1
-
-    def resupply(self) -> None:
-        """ Sets the material units to the same value as the capacity """
-        self._material_units = self._capacity
-
-    def get_remaining_units(self) -> int:
-        """ Returns the number of material units remaining in the bin """
-        return self._material_units
-
-    def is_empty(self) -> bool:
-        """ Returns true if the material units is less or equal to zero"""
-        return self.get_remaining_units() <= 0
+from Bin import Bin
+from Item import Item
+from Utils import ColorsCLI
 
 class WorkStation(object):
-    def __init__(self, id: int, env: simpy.Environment, failure_probability: float) -> None:
+    def __init__(self, ws_id: str, failure_prob: float, suppliers: simpy.Resource, env: simpy.Environment) -> None:
         self._env = env
-        self._bin = _Bin()
-        self._id = id
-        self._failure_probability = failure_probability * 100
-
-    def set_suppliers(self, suppliers: SuppliersContainer) -> None:
+        self._bin = Bin()
+        self._id = ws_id
+        self._failure_probability = failure_prob * 100
         self._suppliers = suppliers
 
-    def set_failure_probability(self, failure_probability: float) -> None:
-        self._failure_probability = failure_probability
+        self._items_to_verification = 5
+        self._failures = 0
+        self._successes = 0
+        self._busy = False
+        
+        #Report Attributes
+        self._fixing_times = list()
+        self._supplying_times = list()
 
-    def work(self) -> simpy.Process:
-        # Check if there is an incident
-        if random.randint(1,100) == 1:
-            return simpy.Interrupt('There was an accident in the facility that stopped production!')
+    def is_busy(self) -> bool:
+        return self._busy
 
-        # Check every 5 products for errors
-        productsTillVerification = 5
-        #print(f"WS#{self._id}\tstarted \tt={self._env.now}\tu={self._bin.get_remaining_units()}")
-        if(self._bin.is_empty()):
-            yield self._env.process(self.resupply())
+    def get_avg_fixing_time(self) -> int:
+        if len(self._fixing_times) == 0:
+            return 0.0
 
-        self._bin.use_material()
-        productsTillVerification -= 1
-        if productsTillVerification == 0:
-            random_int = random.randint(0, int(self._failure_probability))
-            if random_int == self._failure_probability:
-                return simpy.Interrupt('There was a failure in the working station!')
-        # Check if the product was rejected due to quality issues
-        if random.randint(1, 20) == 1:
-            return simpy.Interrupt('The product was rejected due to quality issues!')
+        return sum(self._fixing_times) / len(self._fixing_times)
 
-        yield self._env.timeout(4)
-        #print(f"WS#{self._id}\tfinished\tt={self._env.now}\tu={self._bin.get_remaining_units()}")
+    def get_avg_supplying_time(self) -> int:
+        if len(self._supplying_times) == 0:
+            return 0.0
 
-    def resupply(self) -> simpy.Process:
-        supplier = self._suppliers.check_for_available()
-        while supplier == False:
-            #print(f"WS#{self._id}\twaiting for supply \tt={self._env.now}")
-            try:
-                suplier = self._suppliers.check_for_available()
-            except simpy.Interruption:
-                return
+        return sum(self._supplying_times) / len(self._supplying_times)
 
-        #print(f"WS#{self._id}\tsupplying \tt={self._env.now}")
-        yield self._env.process(supplier.resupply())
-        self._bin.resupply()
+    def work(self, item: Item) -> simpy.Process:
+        try:
+            self._busy = True
+            # Check if there is an incident
+            if random.randint(0,100) < 1:
+                print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critcal error in the facility")
+                return simpy.Interrupt('There was an accident in the facility that stopped production!')
+
+            if(self._bin.is_empty()):
+                yield self._env.process(self.look_for_supply())
+
+            if self._items_to_verification <= 0:
+                if random.randint(0, 100) <= self._failure_probability:
+                    print(f"{self._id} test [{ColorsCLI.ERROR}FAILED{ColorsCLI.DEFAULT}]")
+                    yield self._env.process(self.fix_work_station())
+                else: 
+                    print(f"{self._id} test [{ColorsCLI.SUCCESS}SUCCESS{ColorsCLI.DEFAULT}]")
+                self._items_to_verification = 5
+
+            self._bin.use_material()
+            self._items_to_verification -= 1
+                
+            yield self._env.timeout(4)
+
+            item.update_end_time()
+            item.next_stage()
+            self._busy = False
+        except simpy.Interrupt:
+            return
+
+    def fix_work_station(self) -> simpy.Process:
+        print(f"{self._id} status [{ColorsCLI.WARNING}FIXING - WORKSTATION{ColorsCLI.DEFAULT}]")
+
+        start = self._env.now
+        yield self._env.timeout(random.expovariate(3)) #fixing time
+        end = self._env.now
+        self._fixing_times.append(end - start)
+
+    def look_for_supply(self) -> simpy.Process:
+        print(f"{self._id} status [{ColorsCLI.WARNING}SUPPLYING - WORKSTATION{ColorsCLI.DEFAULT}]")
+        request = self._suppliers.request()
+
+        start = self._env.now
+        yield request #wait for supplier free
+        self._bin.refill()
+        self._suppliers.release(request)
+        end = self._env.now
+
+        self._supplying_times.append(end- start)
+
+    def print_report(self) -> None:
+        print(f"\tOVERVIEW ${self._id}")
+        total_tests = self._failures + self._successes;
+        if total_tests > 0:
+            print(f"\ttests: {self._successes}/{total_tests} ({(self._successes/total_tests)*100}%)")
+        print(f"\tavg fixing time: {self.get_avg_fixing_time()}")
+        print(f"\tavg supply time: {self.get_avg_supplying_time()}")
