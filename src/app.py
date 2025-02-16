@@ -15,6 +15,7 @@ for i in range(6):
 
 factory.add_production_line(prodLine1);
 
+
 def alarm(env: simpy.Environment, delay: int, factory: Factory):
     yield env.timeout(delay)
     factory.action.interrupt()

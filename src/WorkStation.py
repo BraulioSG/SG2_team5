@@ -1,4 +1,5 @@
 import simpy
+from Resuppliers import SuppliersContainer
 
 class _Bin:
     def __init__(self, capacity: int = 25):
@@ -12,7 +13,6 @@ class _Bin:
             #raise Exception("Try to use material when the bin is empty")
             print("bin is empty")
             return
-
         self._material_units -= 1
 
     def resupply(self) -> None:
@@ -33,11 +33,23 @@ class WorkStation(object):
         self._id = id
         self._bin = _Bin()
 
+    def set_suppliersContainer(self, suppliers: SuppliersContainer) -> None:
+        self._suppliers = suppliers
+
+
     def work(self) -> simpy.Process:
         print(f"WS#{self._id}\tstarted \tt={self._env.now}")
         if(self._bin.is_empty()):
             #Do the resuply process
-            print(f"WS#{self._id}\t bin is empty")
+            supplier = self.supplier.check_for_available()
+            while supplier == False:
+                try:
+                    suplier = self.supplier.check_for_available()
+                except simpy.Interruption:
+                    return
+
+            if supplier:
+                yield self._env.process(supplier.resupply(self))
             pass
 
         self._bin.use_material()
@@ -48,5 +60,4 @@ class WorkStation(object):
     def supply(self) -> simpy.Process:
         supply_time = 1
         yield self._env.timeout(1)
-        print(f"WS#{self._id}\tsupplied\tt={self._env.now}")
-
+        print(f"WS#{self._id}\tsupplied\tt={self._env.now}"):w
