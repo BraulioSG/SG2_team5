@@ -1,7 +1,5 @@
-from WorkStation import WorkStation
 import simpy
 import random as rd
-
 
 class SuppliersContainer:
     def __init__(self, env: simpy.Environment, amount):
@@ -22,12 +20,12 @@ class Supplier:
         self.busy = False
         self.env = _env
 
-    def resupply(self, station: WorkStation) -> simpy.Process:
+    def resupply(self) -> simpy.Process:
         if self.busy:
             return
 
         supply_time = 2
 
         self.busy = True
-        station.bin.resupply()
-        yield self.env.timeout(rd.normalvariate(supply_time))
+        yield self.env.timeout(abs(rd.normalvariate(supply_time)))
+        self.busy = False

@@ -4,6 +4,7 @@ import random as rd
 from Factory import Factory
 from ProductionLine import ProductionLine
 from WorkStation import WorkStation
+from Reporter import Reporter
 
 env = simpy.Environment()
 factory = Factory(open_time=10, env=env)
@@ -21,7 +22,10 @@ def alarm(env: simpy.Environment, delay: int, factory: Factory):
     factory.action.interrupt()
     print("Alarm!")
 
-env.process(alarm(env, 200, factory))
+env.process(alarm(env, 5000, factory))
 print("=== Simulation Started ===")
-env.run(until=500)
+env.run(until=5000)
 print("=== Simulation Finished ===")
+
+reporter = Reporter(factory)
+reporter.generate_report()
