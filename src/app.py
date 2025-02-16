@@ -14,7 +14,7 @@ prodLine1 = ProductionLine(id=1, env=env)
 for i in range(6):
     prodLine1.add_work_station(WorkStation(id=i, env=env))
 
-factory.add_production_line(prodLine1);
+factory.add_production_line(prodLine1)
 
 
 def alarm(env: simpy.Environment, delay: int, factory: Factory):

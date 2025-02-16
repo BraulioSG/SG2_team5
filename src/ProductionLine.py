@@ -1,12 +1,12 @@
 import simpy
 
-from Resuppliers import Supplier, SuppliersContainer
+from Resuppliers import SuppliersContainer
 from WorkStation import WorkStation
 
 class ProductionLine(object):
     def __init__(self,id: int, env: simpy.Environment):
         self._env = env
-        self._id = id;
+        self._id = id
         self._work_stations = list()
         self._suppliers = SuppliersContainer(env, 3)
 
@@ -16,7 +16,10 @@ class ProductionLine(object):
 
     def work(self) -> simpy.Process:
         start = self._env.now
+        failure_propability = [0.02, 0.01, 0.05, 0.15, 0.07, 0.06]
         for ws in self._work_stations:
+            failure_propability.pop(0)
+            ws.set_failure_probability(failure_propability)
             yield self._env.process(ws.work())
 
         end = self._env.now
@@ -46,4 +49,4 @@ class ProductionLine(object):
 
     def get_avg_time(self) -> int:
         """ Returns the average time of the production times """
-        return sum(self._production_times)/len(self._production_times)
+        return int(sum(self._production_times)/len(self._production_times))

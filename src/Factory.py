@@ -3,9 +3,9 @@ import simpy
 from ProductionLine import ProductionLine;
 
 class Factory(object):
-    def __init__(self, open_time:int, env: simpy.Environment):
+    def __init__(self, open_time: int, env: simpy.Environment):
         self._env = env
-        self._open_time = open_time;
+        self._open_time = open_time
         self._production_lines = list()
         self.action = self._env.process(self.work())
 
@@ -24,4 +24,4 @@ class Factory(object):
         self._production_lines.append(prodLine)
 
     def get_production_lines(self) -> list:
-        return self._production_lines;
+        return self._production_lines
