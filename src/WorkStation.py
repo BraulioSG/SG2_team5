@@ -42,8 +42,8 @@ class _Bin:
 class WorkStation(object):
     def __init__(self, id: int, env: simpy.Environment) -> None:
         self._env = env
-        self._id = id
         self._bin = _Bin()
+        self._id = id
 
     def set_suppliers(self, suppliers: SuppliersContainer) -> None:
         self._suppliers = suppliers
