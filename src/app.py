@@ -25,6 +25,7 @@ def alarm(env: simpy.Environment, delay: int, factory: Factory):
 env.process(alarm(env, 5000, factory))
 print("=== Simulation Started ===")
 env.run(until=5000)
+
 print("=== Simulation Finished ===")
 
 reporter = Reporter(factory)

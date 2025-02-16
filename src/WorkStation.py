@@ -40,14 +40,13 @@ class _Bin:
         return self.get_remaining_units() <= 0
 
 class WorkStation(object):
-    def __init__(self, id: int, env: simpy.Environment) -> None:
+    def __init__(self, env: simpy.Environment, suppliers: SuppliersContainer) -> None:
         self._env = env
         self._bin = _Bin()
         self._id = id
 
     def set_suppliers(self, suppliers: SuppliersContainer) -> None:
         self._suppliers = suppliers
-
 
     def work(self) -> simpy.Process:
         #print(f"WS#{self._id}\tstarted \tt={self._env.now}\tu={self._bin.get_remaining_units()}")
