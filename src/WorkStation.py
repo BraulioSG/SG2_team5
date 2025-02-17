@@ -10,7 +10,7 @@ class WorkStation(object):
         self._env = env
         self._bin = Bin()
         self._id = ws_id
-        self._failure_probability = failure_prob * 100
+        self._failure_probability = failure_prob
         self._suppliers = suppliers
 
         self._items_to_verification = 5
@@ -42,14 +42,16 @@ class WorkStation(object):
             self._busy = True
             # Check if there is an incident
             if random.randint(0,100) < 1:
-                print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critcal error in the facility")
+                print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critical error in the facility")
                 return simpy.Interrupt('There was an accident in the facility that stopped production!')
 
             if(self._bin.is_empty()):
                 yield self._env.process(self.look_for_supply())
 
             if self._items_to_verification <= 0:
-                if random.randint(0, 100) <= self._failure_probability:
+                failure_chance = random.normalvariate(self._failure_probability)
+                failure_chance = max(0, min(1, failure_chance))
+                if random.random() < failure_chance:
                     print(f"{self._id} test [{ColorsCLI.ERROR}FAILED{ColorsCLI.DEFAULT}]")
                     yield self._env.process(self.fix_work_station())
                 else: 
@@ -59,7 +61,7 @@ class WorkStation(object):
             self._bin.use_material()
             self._items_to_verification -= 1
                 
-            yield self._env.timeout(4)
+            yield self._env.timeout(random.normalvariate(4))
 
             item.update_end_time()
             item.next_stage()
