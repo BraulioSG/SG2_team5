@@ -18,11 +18,11 @@ class ProductionLine(object):
         self._rejected_items = 0
 
     def _setup_production_line(self) -> None:
-        print(f"Setting up the PL#{self._id}...")
+        #print(f"Setting up the PL#{self._id}...")
         for fail_prob in self._failure_probs:
             ws_id = f"WS#{len(self._work_stations)+1}@{self._id}"
             self._work_stations.append(WorkStation(ws_id, fail_prob, self._suppliers, self._env))
-            print(f"Work Station created with id: {ws_id}")
+            #print(f"Work Station created with id: {ws_id}")
 
     def start(self) -> simpy.Process:
         try:
@@ -85,3 +85,10 @@ class ProductionLine(object):
             print(f"\tApproved items: {self._approved_items} ({(self._approved_items/total_items)*100}%)")
             print(f"\tRejected items: {self._rejected_items} ({(self._rejected_items/total_items)*100}%)")
         print(f"\ttotal items: {self._approved_items + self._rejected_items}")
+
+    def print_for_csv(self):
+        total_items = self._approved_items + self._rejected_items
+        for ws in self._work_stations:
+            line = (f"{self._id}, {self._approved_items}, {self._rejected_items}, {total_items}, {ws.get_id()}, "
+                    f"{ws.get_avg_fixing_time()}, {ws.get_avg_supplying_time()}")
+            print(line)

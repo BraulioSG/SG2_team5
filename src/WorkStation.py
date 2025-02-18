@@ -22,6 +22,9 @@ class WorkStation(object):
         self._fixing_times = list()
         self._supplying_times = list()
 
+    def get_id(self):
+        return self._id
+
     def is_busy(self) -> bool:
         return self._busy
 
@@ -42,7 +45,7 @@ class WorkStation(object):
             self._busy = True
             # Check if there is an incident
             if random.randint(0,100) < 1:
-                print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critical error in the facility")
+                #print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critical error in the facility")
                 return simpy.Interrupt('There was an accident in the facility that stopped production!')
 
             if(self._bin.is_empty()):
@@ -52,10 +55,11 @@ class WorkStation(object):
                 failure_chance = random.normalvariate(self._failure_probability)
                 failure_chance = max(0, min(1, failure_chance))
                 if random.random() < failure_chance:
-                    print(f"{self._id} test [{ColorsCLI.ERROR}FAILED{ColorsCLI.DEFAULT}]")
+                    #print(f"{self._id} test [{ColorsCLI.ERROR}FAILED{ColorsCLI.DEFAULT}]")
                     yield self._env.process(self.fix_work_station())
-                else: 
-                    print(f"{self._id} test [{ColorsCLI.SUCCESS}SUCCESS{ColorsCLI.DEFAULT}]")
+                else:
+                    pass
+                    #print(f"{self._id} test [{ColorsCLI.SUCCESS}SUCCESS{ColorsCLI.DEFAULT}]")
                 self._items_to_verification = 5
 
             self._bin.use_material()
@@ -70,7 +74,7 @@ class WorkStation(object):
             return
 
     def fix_work_station(self) -> simpy.Process:
-        print(f"{self._id} status [{ColorsCLI.WARNING}FIXING - WORKSTATION{ColorsCLI.DEFAULT}]")
+       # print(f"{self._id} status [{ColorsCLI.WARNING}FIXING - WORKSTATION{ColorsCLI.DEFAULT}]")
 
         start = self._env.now
         yield self._env.timeout(random.expovariate(3)) #fixing time
@@ -78,7 +82,7 @@ class WorkStation(object):
         self._fixing_times.append(end - start)
 
     def look_for_supply(self) -> simpy.Process:
-        print(f"{self._id} status [{ColorsCLI.WARNING}SUPPLYING - WORKSTATION{ColorsCLI.DEFAULT}]")
+        #print(f"{self._id} status [{ColorsCLI.WARNING}SUPPLYING - WORKSTATION{ColorsCLI.DEFAULT}]")
         request = self._suppliers.request()
 
         start = self._env.now

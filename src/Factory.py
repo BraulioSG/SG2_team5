@@ -20,7 +20,7 @@ class Factory(object):
         self.action = self._env.process(self.work())
 
     def work(self) -> simpy.Process:
-        print("Factory Opened")
+        #print("Factory Opened")
         for pl in self._production_lines:
             self._env.process(pl.start())
 
@@ -41,7 +41,9 @@ class Factory(object):
         return self._production_lines
 
     def print_report(self) -> None:
-        print("\n=== FACTORY RESUlTS ===")
         for pl in self._production_lines:
             pl.print_report()
-        
+
+    def print_for_csv(self) -> None:
+        for pl in self._production_lines:
+            pl.print_for_csv()
