@@ -87,6 +87,9 @@ class WorkStation(object):
 
         start = self._env.now
         yield request #wait for supplier free
+        time = random.normalvariate(2)
+        self._supplying_times.append(time)
+        yield self._env.timeout(time)
         self._bin.refill()
         self._suppliers.release(request)
         end = self._env.now
