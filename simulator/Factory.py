@@ -4,9 +4,7 @@ from ProductionLine import ProductionLine
 
 class Factory(object):
     """ Class Representation for the Factory
-    Attributes:
-
-    Methods:
+    it handles all production lines and suppliers
     """
     def __init__(self, env: simpy.Environment, app, num_suppliers:int = 3) -> None:
         self._env = env
@@ -54,9 +52,11 @@ class Factory(object):
                 action.interrupt()
 
     def print_report(self) -> None:
+        """ Displays the information to see the details of the simulation """
         for pl in self._production_lines:
             pl.print_report()
 
     def print_for_csv(self) -> None:
+        """ Prints the results of the simulation in csv format """
         for pl in self._production_lines:
             pl.print_for_csv()

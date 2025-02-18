@@ -4,6 +4,9 @@ from WorkStation import WorkStation
 from Item import Item
 
 class ProductionLine(object):
+    """ ProductionLine representation in a class 
+    is in charge of controlling the manufacturing process and workstations
+    """
     def __init__(self, prod_id: str, failure_probs: list, app, suppliers: simpy.Resource, env: simpy.Environment):
         self._env = env
         self._id = prod_id
@@ -46,7 +49,7 @@ class ProductionLine(object):
                         else:
                             self._rejected_items += 1
 
-                        self._production_times.append(item.get_production_time)
+                        self._production_times.append(item.get_production_time())
                         self._ongoing_items.remove(item)
                         continue
 
@@ -78,8 +81,10 @@ class ProductionLine(object):
         return min(self._production_times)
 
     def get_avg_time(self) -> int:
-        """ Returns the average time of the production times """
-        return int(sum(self._production_times)/len(self._production_times))
+        """ Returns the average time of the production times or 0 if the len is 0 """
+        if len(self._production_times) == 0:
+            return 0.0
+        return sum(self._production_times)/len(self._production_times)
 
     def alarm(self):
         for ws in self._work_stations:
@@ -107,5 +112,5 @@ class ProductionLine(object):
         total_items = self._approved_items + self._rejected_items
         for ws in self._work_stations:
             line = (f"{self._id}, {self._approved_items}, {self._rejected_items}, {total_items}, {ws.get_id()}, "
-                    f"{ws.get_avg_fixing_time()}, {ws.get_avg_supplying_time()}, {ws.get_avg_production_time()}")
+                    f"{ws.get_avg_fixing_time()}, {ws.get_avg_supplying_time()}, {ws.get_avg_production_time()}, {self.get_avg_time()}")
             print(line)

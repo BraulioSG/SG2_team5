@@ -6,6 +6,10 @@ from Item import Item
 from Utils import ColorsCLI
 
 class WorkStation(object):
+    """ WorkStation representation class
+    manages the failures probabilities, request for suppliers and fixing actions in
+    case it fails a quality test after 5 items manufactured
+    """
     def __init__(self, ws_id: str, failure_prob: float, app, suppliers: simpy.Resource,
                  env: simpy.Environment) -> None:
         self._env = env
@@ -62,8 +66,8 @@ class WorkStation(object):
             self._busy = True
 
             # Check if there is an incident
-            if random.randint(0,100) < 1:
-                #print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critical error in the facility")
+            if random.random() * 100 <= 0.01:
+                #print(f"[{ColorsCLI.ERROR}INTERRUPTION{ColorsCLI.DEFAULT}] Critical error in the facility at {self._env.now}")
                 #ALARM
                 self._app.alarm()
 

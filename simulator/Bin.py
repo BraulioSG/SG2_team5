@@ -1,16 +1,8 @@
 class Bin:
     """
     Represents the Bin for a workStation
-    Attributes: 
-    - material_units
-    - capacity
-
-    Methods:
-    + use_material() -> None
-    + resupply() -> None
-    + get_remaining_units() -> int
-    + is_empty() -> bool
-    """
+    it can be refiiled and use material
+   """
     def __init__(self, capacity: int = 25):
         self._material_units = capacity
         self._capacity = capacity

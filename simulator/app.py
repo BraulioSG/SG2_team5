@@ -3,7 +3,6 @@ import simpy
 import random as rd
 
 from Factory import Factory
-from Reporter import Reporter
 
 os.system('color')
 
