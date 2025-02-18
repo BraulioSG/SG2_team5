@@ -18,7 +18,7 @@ class Bin:
     def use_material(self):
         """ Decrease by one the material units, if is empty it will rise an exception """
         if(self.is_empty()):
-            raise Exception("Try to use material when the bin is empty")
+            #print("Try to use material when the bin is empty")
             return
         self._material_units -= 1
 
